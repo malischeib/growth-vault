@@ -1,4 +1,4 @@
-const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -12,7 +12,7 @@ const html = `<!DOCTYPE html>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --bg: #F6F7FB;
@@ -479,11 +479,11 @@ const html = `<!DOCTYPE html>
     function labelToYears(label) {
       const s = String(label || '').toLowerCase().trim();
       if (s === 'birth' || s === 'newborn') return 0;
-      const wk = s.match(/([\\d.]+)\\s*week/);
+      const wk = s.match(/([\d.]+)\s*week/);
       if (wk) return parseFloat(wk[1]) / 52;
-      const mo = s.match(/([\\d.]+)\\s*month/);
+      const mo = s.match(/([\d.]+)\s*month/);
       if (mo) return parseFloat(mo[1]) / 12;
-      const yr = s.match(/([\\d.]+)\\s*year/);
+      const yr = s.match(/([\d.]+)\s*year/);
       if (yr) return parseFloat(yr[1]);
       return null;
     }
@@ -511,7 +511,7 @@ const html = `<!DOCTYPE html>
     function fmtHeight(inches) {
       if (!inches) return '—';
       const ft = Math.floor(inches / 12);
-      const rem = (inches % 12).toFixed(1).replace(/\\.0$/, '');
+      const rem = (inches % 12).toFixed(1).replace(/\.0$/, '');
       return inches + '" (' + ft + "'" + rem + '")';
     }
 
@@ -686,16 +686,16 @@ const html = `<!DOCTYPE html>
         const d = data[kid] || {};
         const div = document.createElement('div');
         div.className = 'kid-card ' + kid;
-        div.innerHTML = \`
+        div.innerHTML = `
           <div class="kid-name">
-            <span>\${kid}</span>
-            <span class="badge">\${d.ageLabel || row.label}</span>
+            <span>${kid}</span>
+            <span class="badge">${d.ageLabel || row.label}</span>
           </div>
-          <div class="stat-big">\${d.height ? fmtHeight(Number(d.height.toFixed(2))) : '—'}\${d.normalized ? '<span class="est-pill">~est</span>' : ''}</div>
-          <div class="stat-row">⚖️ Weight: <strong>\${d.weight ? d.weight.toFixed(1) + ' lbs' : '—'}</strong></div>
-          \${d.head ? '<div class="stat-row">🧢 Head: <strong>' + d.head.toFixed(2) + '"</strong></div>' : ''}
-          \${d.normalized ? '<div class="stat-row" style="font-size:11px; color:var(--ink);">✦ ' + d.rawAgeNote + '</div>' : (d.date ? '<div class="stat-row" style="font-size:11px;">📅 Exam: ' + d.date + '</div>' : '')}
-        \`;
+          <div class="stat-big">${d.height ? fmtHeight(Number(d.height.toFixed(2))) : '—'}${d.normalized ? '<span class="est-pill">~est</span>' : ''}</div>
+          <div class="stat-row">⚖️ Weight: <strong>${d.weight ? d.weight.toFixed(1) + ' lbs' : '—'}</strong></div>
+          ${d.head ? '<div class="stat-row">🧢 Head: <strong>' + d.head.toFixed(2) + '"</strong></div>' : ''}
+          ${d.normalized ? '<div class="stat-row" style="font-size:11px; color:var(--ink);">✦ ' + d.rawAgeNote + '</div>' : (d.date ? '<div class="stat-row" style="font-size:11px;">📅 Exam: ' + d.date + '</div>' : '')}
+        `;
         cardsEl.appendChild(div);
       });
 
@@ -704,11 +704,11 @@ const html = `<!DOCTYPE html>
       diffEl.innerHTML = pairs.map(([a, b]) => {
         const wDiff = (data[a]?.weight && data[b]?.weight) ? (data[a].weight - data[b].weight).toFixed(1) : null;
         const hDiff = (data[a]?.height && data[b]?.height) ? (data[a].height - data[b].height).toFixed(2) : null;
-        return \`<div class="diff-item">
-          <strong>\${a} vs \${b}</strong><br/>
-          Height: \${hDiff !== null ? (hDiff > 0 ? '+' + hDiff : hDiff) + '"' : '—'} · 
-          Weight: \${wDiff !== null ? (wDiff > 0 ? '+' + wDiff : wDiff) + ' lbs' : '—'}
-        </div>\`;
+        return `<div class="diff-item">
+          <strong>${a} vs ${b}</strong><br/>
+          Height: ${hDiff !== null ? (hDiff > 0 ? '+' + hDiff : hDiff) + '"' : '—'} · 
+          Weight: ${wDiff !== null ? (wDiff > 0 ? '+' + wDiff : wDiff) + ' lbs' : '—'}
+        </div>`;
       }).join('');
     }
 
@@ -780,7 +780,7 @@ const html = `<!DOCTYPE html>
             },
             tooltip: {
               callbacks: {
-                label: (c) => \`\${c.dataset.label} (\${formatYearsMonths(c.parsed.x)}): \${c.parsed.y}\${currentMetric === 'weight' ? ' lbs' : '"'}\`
+                label: (c) => `${c.dataset.label} (${formatYearsMonths(c.parsed.x)}): ${c.parsed.y}${currentMetric === 'weight' ? ' lbs' : '"'}`
               }
             }
           }
@@ -791,12 +791,12 @@ const html = `<!DOCTYPE html>
       projEl.innerHTML = ['Henry', 'Etta', 'Jack'].map(kid => {
         const p = projectAdultHeight(kid);
         if (!p) return '';
-        return \`<div class="proj-card" style="border-top: 4px solid \${COLORS[kid]};">
-          <div style="font-weight:800; color:\${COLORS[kid]}; font-size:15px;">\${kid} · \${p.percentile}th %ile</div>
-          <div style="font-family:'Fraunces',serif; font-size:21px; font-weight:900; margin:4px 0;">\${fmtHeight(p.curveProjected)}</div>
+        return `<div class="proj-card" style="border-top: 4px solid ${COLORS[kid]};">
+          <div style="font-weight:800; color:${COLORS[kid]}; font-size:15px;">${kid} · ${p.percentile}th %ile</div>
+          <div style="font-family:'Fraunces',serif; font-size:21px; font-weight:900; margin:4px 0;">${fmtHeight(p.curveProjected)}</div>
           <div style="font-size:11.5px; color:var(--muted); font-weight:600;">Curve trajectory at age 20</div>
-          <div style="font-size:11.5px; color:var(--ink); margin-top:4px; font-weight:600;">🧬 Genetic target: \${fmtHeight(p.midParental)} (±2")</div>
-        </div>\`;
+          <div style="font-size:11.5px; color:var(--ink); margin-top:4px; font-weight:600;">🧬 Genetic target: ${fmtHeight(p.midParental)} (±2")</div>
+        </div>`;
       }).join('');
     }
 
@@ -814,17 +814,17 @@ const html = `<!DOCTYPE html>
           .filter(other => other !== kid)
           .map(other => {
             const est = interpolateAtAge(other, ageNow);
-            if (est.height.notReached || est.height.val === null) return \`<div class="stat-row">• \${other} hasn't reached \${formatYearsMonths(ageNow)} yet</div>\`;
-            return \`<div class="stat-row">• \${other} at \${formatYearsMonths(ageNow)}: <strong>\${est.height.val}" / \${est.weight.val} lbs</strong></div>\`;
+            if (est.height.notReached || est.height.val === null) return `<div class="stat-row">• ${other} hasn't reached ${formatYearsMonths(ageNow)} yet</div>`;
+            return `<div class="stat-row">• ${other} at ${formatYearsMonths(ageNow)}: <strong>${est.height.val}" / ${est.weight.val} lbs</strong></div>`;
           }).join('');
 
         const div = document.createElement('div');
         div.className = 'kid-card ' + kid;
-        div.innerHTML = \`
-          <div class="kid-name"><span>\${kid}</span><span class="badge">\${formatYearsMonths(ageNow)}</span></div>
+        div.innerHTML = `
+          <div class="kid-name"><span>${kid}</span><span class="badge">${formatYearsMonths(ageNow)}</span></div>
           <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Sibling Time Machine:</div>
-          \${comparisons}
-        \`;
+          ${comparisons}
+        `;
         box.appendChild(div);
       });
     }
@@ -858,12 +858,12 @@ const html = `<!DOCTYPE html>
         const div = document.createElement('div');
         div.className = 'scale-card';
         div.style.borderTop = '5px solid ' + COLORS[kid];
-        div.innerHTML = \`
-          <span class="scale-emoji">\${obj.emoji}</span>
-          <strong style="color:\${COLORS[kid]}; font-size:16px;">\${kid} (\${d.ageLabel || row.label})\${d.normalized ? '<span class="est-pill">~est</span>' : ''}</strong>
-          <p style="font-size:13px; margin-top:6px;">At <strong>\${w ? w.toFixed(1) + ' lbs' : '?'}</strong>, \${kid} weighs as much as <strong>\${obj.name}</strong>!</p>
-          <p style="font-size:12px; color:var(--muted); margin-top:6px;">🧱 \${h ? h.toFixed(1) + '" tall = <strong>' + legoBricks + ' LEGO bricks</strong> stacked!' : ''}</p>
-        \`;
+        div.innerHTML = `
+          <span class="scale-emoji">${obj.emoji}</span>
+          <strong style="color:${COLORS[kid]}; font-size:16px;">${kid} (${d.ageLabel || row.label})${d.normalized ? '<span class="est-pill">~est</span>' : ''}</strong>
+          <p style="font-size:13px; margin-top:6px;">At <strong>${w ? w.toFixed(1) + ' lbs' : '?'}</strong>, ${kid} weighs as much as <strong>${obj.name}</strong>!</p>
+          <p style="font-size:12px; color:var(--muted); margin-top:6px;">🧱 ${h ? h.toFixed(1) + '" tall = <strong>' + legoBricks + ' LEGO bricks</strong> stacked!' : ''}</p>
+        `;
         grid.appendChild(div);
       });
     }
@@ -907,9 +907,4 @@ const html = `<!DOCTYPE html>
     else document.getElementById('settingsModal').classList.add('open');
   </script>
 </body>
-</html>`;
-
-const a = document.createElement('a');
-a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-a.download = 'index.html';
-a.click();
+</html>

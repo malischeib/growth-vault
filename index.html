@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#1B365D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Growth Vault" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Growth Vault — Sibling Milestone Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #F6F7FB;
+      --card: #FFFFFF;
+      --ink: #182230;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --henry: #2563EB;
+      --henry-soft: #EFF6FF;
+      --etta: #DB2777;
+      --etta-soft: #FDF2F8;
+      --jack: #16A34A;
+      --jack-soft: #F0FDF4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      padding: 16px 14px 96px;
+      max-width: 840px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .subtitle { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .icon-pill {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: #E2E8F0;
+      padding: 5px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 9px 6px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+    .card h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .kid-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .kid-card {
+      border-radius: 16px;
+      padding: 14px;
+      border: 2px solid transparent;
+    }
+    .kid-card.Henry { background: var(--henry-soft); border-color: #BFDBFE; }
+    .kid-card.Etta  { background: var(--etta-soft);  border-color: #FBCFE8; }
+    .kid-card.Jack  { background: var(--jack-soft);  border-color: #BBF7D0; }
+    .kid-name {
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .Henry .kid-name { color: var(--henry); }
+    .Etta .kid-name  { color: var(--etta); }
+    .Jack .kid-name  { color: var(--jack); }
+    .stat-big { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900; line-height: 1.1; }
+    .stat-row { font-size: 12.5px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+    .badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.85);
+    }
+    input[type="range"] { width: 100%; accent-color: var(--ink); margin: 12px 0 6px; cursor: pointer; }
+    .slider-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .milestone-pill {
+      background: var(--ink);
+      color: #FFF;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .diff-box {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1.5px dashed var(--border);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+    .diff-item { background: var(--bg); padding: 8px 10px; border-radius: 10px; }
+    .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip {
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .chip.active { background: var(--ink); color: #FFF; border-color: var(--ink); }
+    .chart-wrap { position: relative; height: 320px; width: 100%; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      background: #FFF;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #FFF;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .scale-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+    .scale-card { background: var(--bg); border-radius: 14px; padding: 14px; text-align: center; }
+    .scale-emoji { font-size: 38px; margin-bottom: 6px; display: block; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .modal-bg.open { display: flex; }
+    .modal { background: #FFF; border-radius: 18px; padding: 20px; max-width: 440px; width: 100%; }
+    @media (max-width: 620px) {
+      .kid-grid, .diff-box { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Growth Vault</h1>
+      <div class="subtitle" id="syncStatus">Connecting to Google Sheet...</div>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="icon-pill" id="refreshBtn">↻ Sync</button>
+      <button class="icon-pill" id="settingsBtn">⚙ Sheet URL</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="showdown">⚖️ Showdown</button>
+    <button class="tab-btn" data-tab="curves">📈 Curves</button>
+    <button class="tab-btn" data-tab="capsule">⏳ Today & Log</button>
+    <button class="tab-btn" data-tab="scale">🦒 Fun Scale</button>
+  </div>
+
+  <!-- TAB 1: SAME-AGE SHOWDOWN -->
+  <section id="tab-showdown" class="tab-panel">
+    <div class="card">
+      <div class="slider-header">
+        <div>
+          <h2>Same-Age Sibling Showdown</h2>
+          <p class="subtitle">Scrub any milestone from Birth through 13+ years</p>
+        </div>
+        <span class="milestone-pill" id="sliderLabel">Birth</span>
+      </div>
+      <input type="range" id="ageSlider" min="0" max="0" value="0" />
+      <div class="kid-grid" id="showdownCards"></div>
+      <div class="diff-box" id="diffSummary"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: GROWTH CURVES -->
+  <section id="tab-curves" class="tab-panel" style="display:none;">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div>
+          <h2>Overlaid Sibling Curves</h2>
+          <p class="subtitle">Plotted by exact biological age (calculated from DOB & June exam dates)</p>
+        </div>
+        <div class="chart-controls">
+          <button class="chip active" data-metric="height">Height (in)</button>
+          <button class="chip" data-metric="weight">Weight (lbs)</button>
+          <button class="chip" data-metric="head">Head (in)</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="growthChart"></canvas>
+      </div>
+      <div id="projectionNote" style="margin-top:12px; font-size:12.5px; color:var(--muted); background:var(--bg); padding:10px 12px; border-radius:10px;"></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: CURRENT-AGE TIME CAPSULE & DOORFRAME LOGGER -->
+  <section id="tab-capsule" class="tab-panel" style="display:none;">
+    <div class="card">
+      <h2>Today's Sibling Time Capsule</h2>
+      <p class="subtitle" id="todayDateLabel"></p>
+      <div class="kid-grid" id="capsuleCards"></div>
+    </div>
+
+    <div class="card">
+      <h2>📏 Doorframe Check-In Logger</h2>
+      <p class="subtitle">Log a new home height/weight directly into your Google Sheet</p>
+      <form id="logForm">
+        <div class="form-grid">
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--muted);">Child</label>
+            <select id="logKid">
+              <option value="Henry">Henry (Blue)</option>
+              <option value="Etta">Etta (Pink)</option>
+              <option value="Jack">Jack (Green)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--muted);">Date</label>
+            <input type="date" id="logDate" required />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--muted);">Height (in)</label>
+            <input type="number" step="0.125" id="logHeight" placeholder="e.g. 58.5" />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--muted);">Weight (lbs)</label>
+            <input type="number" step="0.1" id="logWeight" placeholder="e.g. 84.2" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" id="saveLogBtn">Save to Google Sheet</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- TAB 4: REAL-WORLD SIZE SCALE -->
+  <section id="tab-scale" class="tab-panel" style="display:none;">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <h2>Fun Size & Weight Visualizer</h2>
+          <p class="subtitle">See how big each kid is compared to everyday things & animals</p>
+        </div>
+        <select id="scaleMilestoneSelect" style="width:auto; font-weight:700;"></select>
+      </div>
+      <div class="scale-grid" id="scaleGrid"></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-bg" id="settingsModal">
+    <div class="modal">
+      <h2 style="font-family:'Fraunces',serif; margin-bottom:6px;">Google Sheet Connection</h2>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+        Paste your deployed Google Apps Script Web App URL below:
+      </p>
+      <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+      <button class="btn-primary" id="saveUrlBtn">Connect & Load Data</button>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+
+    const DOBS = {
+      Henry: new Date('2013-04-06T12:00:00'),
+      Etta:  new Date('2015-03-17T12:00:00'),
+      Jack:  new Date('2016-12-14T12:00:00')
+    };
+
+    const COLORS = { Henry: '#2563EB', Etta: '#DB2777', Jack: '#16A34A' };
+    let sheetData = { rows: [] };
+    let chartInstance = null;
+    let currentMetric = 'height';
+
+    const DEFAULT_URL = localStorage.getItem('gv_script_url') || '';
+
+    function labelToYears(label) {
+      const s = String(label || '').toLowerCase().trim();
+      if (s === 'birth' || s === 'newborn') return 0;
+      const wk = s.match(/([\d.]+)\s*week/);
+      if (wk) return parseFloat(wk[1]) / 52;
+      const mo = s.match(/([\d.]+)\s*month/);
+      if (mo) return parseFloat(mo[1]) / 12;
+      const yr = s.match(/([\d.]+)\s*year/);
+      if (yr) return parseFloat(yr[1]);
+      return null;
+    }
+
+    function exactAgeYears(kid, dateStr, fallbackLabel) {
+      if (dateStr) {
+        const d = new Date(dateStr + 'T12:00:00');
+        if (!isNaN(d)) {
+          const yrs = (d - DOBS[kid]) / (1000 * 60 * 60 * 24 * 365.25);
+          if (yrs >= 0) return yrs;
+        }
+      }
+      return labelToYears(fallbackLabel);
+    }
+
+    function formatYearsMonths(yrs) {
+      if (yrs === null || yrs === undefined || isNaN(yrs)) return '';
+      if (yrs < 0.03) return 'Birth';
+      if (yrs < 1) return Math.round(yrs * 12) + ' mos';
+      const y = Math.floor(yrs);
+      const m = Math.round((yrs - y) * 12);
+      return m === 12 ? (y + 1) + 'y 0m' : y + 'y ' + m + 'm';
+    }
+
+    function fmtHeight(inches) {
+      if (!inches) return '—';
+      const ft = Math.floor(inches / 12);
+      const rem = (inches % 12).toFixed(1).replace(/\.0$/, '');
+      return inches + '" (' + ft + "'" + rem + '")';
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+        if (btn.dataset.tab === 'curves') renderChart();
+      };
+    });
+
+    document.getElementById('settingsBtn').onclick = () => {
+      document.getElementById('scriptUrlInput').value = localStorage.getItem('gv_script_url') || '';
+      document.getElementById('settingsModal').classList.add('open');
+    };
+
+    document.getElementById('saveUrlBtn').onclick = () => {
+      const url = document.getElementById('scriptUrlInput').value.trim();
+      if (!url) return;
+      localStorage.setItem('gv_script_url', url);
+      document.getElementById('settingsModal').classList.remove('open');
+      loadSheetData();
+    };
+
+    document.getElementById('refreshBtn').onclick = loadSheetData;
+
+    async function loadSheetData() {
+      const url = localStorage.getItem('gv_script_url');
+      if (!url) {
+        document.getElementById('settingsModal').classList.add('open');
+        return;
+      }
+      document.getElementById('syncStatus').textContent = 'Syncing with Google Sheet...';
+      try {
+        const res = await fetch(url);
+        sheetData = await res.json();
+        document.getElementById('syncStatus').textContent = '● Live synced (' + sheetData.rows.length + ' milestones)';
+        initUI();
+      } catch (err) {
+        document.getElementById('syncStatus').textContent = '⚠ Sync error — check Sheet URL';
+      }
+    }
+
+    function initUI() {
+      const rows = sheetData.rows || [];
+      if (!rows.length) return;
+
+      const slider = document.getElementById('ageSlider');
+      slider.max = rows.length - 1;
+      slider.value = rows.length - 1;
+      slider.oninput = () => renderShowdown(Number(slider.value));
+      renderShowdown(rows.length - 1);
+
+      const scaleSel = document.getElementById('scaleMilestoneSelect');
+      scaleSel.innerHTML = '';
+      rows.forEach((r, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = r.label || ('Row ' + r.rowIndex);
+        scaleSel.appendChild(opt);
+      });
+      scaleSel.value = rows.length - 1;
+      scaleSel.onchange = () => renderScale(Number(scaleSel.value));
+      renderScale(rows.length - 1);
+
+      renderCapsule();
+      renderChart();
+    }
+
+    function renderShowdown(idx) {
+      const row = sheetData.rows[idx];
+      if (!row) return;
+      document.getElementById('sliderLabel').textContent = row.label || 'Milestone';
+
+      const cardsEl = document.getElementById('showdownCards');
+      cardsEl.innerHTML = '';
+
+      ['Henry', 'Etta', 'Jack'].forEach(kid => {
+        const d = row[kid] || {};
+        const ageYrs = exactAgeYears(kid, d.date, row.label);
+        const div = document.createElement('div');
+        div.className = 'kid-card ' + kid;
+        div.innerHTML = `
+          <div class="kid-name">
+            <span>${kid}</span>
+            <span class="badge">${d.date ? formatYearsMonths(ageYrs) : row.label}</span>
+          </div>
+          <div class="stat-big">${d.height ? fmtHeight(d.height) : '—'}</div>
+          <div class="stat-row">⚖️ Weight: <strong>${d.weight ? d.weight + ' lbs' : '—'}</strong></div>
+          ${d.head ? '<div class="stat-row">🧢 Head: <strong>' + d.head + '"</strong></div>' : ''}
+          ${d.date ? '<div class="stat-row" style="font-size:11px;">📅 Exam: ' + d.date + '</div>' : ''}
+        `;
+        cardsEl.appendChild(div);
+      });
+
+      const pairs = [['Henry', 'Etta'], ['Etta', 'Jack'], ['Henry', 'Jack']];
+      const diffEl = document.getElementById('diffSummary');
+      diffEl.innerHTML = pairs.map(([a, b]) => {
+        const wDiff = (row[a]?.weight && row[b]?.weight) ? (row[a].weight - row[b].weight).toFixed(1) : null;
+        const hDiff = (row[a]?.height && row[b]?.height) ? (row[a].height - row[b].height).toFixed(2) : null;
+        return `<div class="diff-item">
+          <strong>${a} vs ${b}</strong><br/>
+          Height: ${hDiff !== null ? (hDiff > 0 ? '+' + hDiff : hDiff) + '"' : '—'} · 
+          Weight: ${wDiff !== null ? (wDiff > 0 ? '+' + wDiff : wDiff) + ' lbs' : '—'}
+        </div>`;
+      }).join('');
+    }
+
+    function getKidSeries(kid, metric) {
+      return (sheetData.rows || [])
+        .map(r => {
+          const val = r[kid]?.[metric];
+          const age = exactAgeYears(kid, r[kid]?.date, r.label);
+          return (val !== null && val !== undefined && age !== null) ? { x: Number(age.toFixed(3)), y: val, label: r.label } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.x - b.x);
+    }
+
+    document.querySelectorAll('.chip[data-metric]').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.chip[data-metric]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMetric = btn.dataset.metric;
+        renderChart();
+      };
+    });
+
+    function renderChart() {
+      const ctx = document.getElementById('growthChart');
+      if (!ctx || !sheetData.rows.length) return;
+      if (chartInstance) chartInstance.destroy();
+
+      const datasets = ['Henry', 'Etta', 'Jack'].map(kid => ({
+        label: kid,
+        data: getKidSeries(kid, currentMetric),
+        borderColor: COLORS[kid],
+        backgroundColor: COLORS[kid],
+        tension: 0.25,
+        pointRadius: 4,
+        borderWidth: 2.5
+      }));
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { type: 'linear', title: { display: true, text: 'Age (Years)' } },
+            y: { title: { display: true, text: currentMetric === 'weight' ? 'Weight (lbs)' : 'Inches' } }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (c) => `${c.dataset.label} (${formatYearsMonths(c.parsed.x)}): ${c.parsed.y}${currentMetric === 'weight' ? ' lbs' : '"'}`
+              }
+            }
+          }
+        }
+      });
+
+      // Simple trajectory note from latest growth rate
+      const notes = ['Henry', 'Etta', 'Jack'].map(kid => {
+        const s = getKidSeries(kid, 'height');
+        if (s.length < 2) return '';
+        const last = s[s.length - 1];
+        const prev = s[s.length - 2];
+        const rate = ((last.y - prev.y) / Math.max(0.25, last.x - prev.x)).toFixed(1);
+        return `<strong>${kid}</strong>: currently ${fmtHeight(last.y)} (growing ~${rate}"/yr)`;
+      }).filter(Boolean);
+      document.getElementById('projectionNote').innerHTML = '📏 <strong>Latest Velocity:</strong> ' + notes.join(' &nbsp;•&nbsp; ');
+    }
+
+    function interpolateAtAge(kid, targetAgeYrs) {
+      const hSeries = getKidSeries(kid, 'height');
+      const wSeries = getKidSeries(kid, 'weight');
+      function interp(arr) {
+        if (!arr.length) return null;
+        if (targetAgeYrs <= arr[0].x) return arr[0].y;
+        if (targetAgeYrs >= arr[arr.length - 1].x) return arr[arr.length - 1].y;
+        for (let i = 0; i < arr.length - 1; i++) {
+          if (targetAgeYrs >= arr[i].x && targetAgeYrs <= arr[i + 1].x) {
+            const t = (targetAgeYrs - arr[i].x) / (arr[i + 1].x - arr[i].x);
+            return +(arr[i].y + t * (arr[i + 1].y - arr[i].y)).toFixed(1);
+          }
+        }
+        return null;
+      }
+      return { height: interp(hSeries), weight: interp(wSeries), maxAge: hSeries[hSeries.length - 1]?.x || 0 };
+    }
+
+    function renderCapsule() {
+      const now = new Date();
+      document.getElementById('todayDateLabel').textContent = 'Exact ages as of ' + now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      document.getElementById('logDate').value = now.toISOString().slice(0, 10);
+
+      const box = document.getElementById('capsuleCards');
+      box.innerHTML = '';
+
+      ['Henry', 'Etta', 'Jack'].forEach(kid => {
+        const ageNow = (now - DOBS[kid]) / (1000 * 60 * 60 * 24 * 365.25);
+        const comparisons = ['Henry', 'Etta', 'Jack']
+          .filter(other => other !== kid)
+          .map(other => {
+            const est = interpolateAtAge(other, ageNow);
+            if (est.maxAge < ageNow - 0.3) return `<div class="stat-row">• ${other} hasn't reached ${formatYearsMonths(ageNow)} yet</div>`;
+            return `<div class="stat-row">• ${other} at ${formatYearsMonths(ageNow)}: <strong>${est.height}" / ${est.weight} lbs</strong></div>`;
+          }).join('');
+
+        const div = document.createElement('div');
+        div.className = 'kid-card ' + kid;
+        div.innerHTML = `
+          <div class="kid-name"><span>${kid}</span><span class="badge">${formatYearsMonths(ageNow)}</span></div>
+          <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Sibling Time Machine:</div>
+          ${comparisons}
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    const OBJECTS = [
+      { maxW: 10, emoji: '🍉', name: 'a plump watermelon or bowling ball' },
+      { maxW: 16, emoji: '🐈', name: 'a large Maine Coon cat' },
+      { maxW: 25, emoji: '🐕', name: 'a French Bulldog or 3 gallons of paint' },
+      { maxW: 35, emoji: '🚲', name: 'a beach cruiser bicycle' },
+      { maxW: 48, emoji: '🧳', name: 'a max-weight airline checked suitcase' },
+      { maxW: 65, emoji: ' retrievers 🦮', name: 'an adult Golden Retriever' },
+      { maxW: 85, emoji: '🐆', name: 'an adult cheetah' },
+      { maxW: 110, emoji: '🐼', name: 'a giant panda cub or large kangaroo' },
+      { maxW: 999, emoji: '🦌', name: 'an adult white-tailed deer' }
+    ];
+
+    function renderScale(idx) {
+      const row = sheetData.rows[idx];
+      if (!row) return;
+      const grid = document.getElementById('scaleGrid');
+      grid.innerHTML = '';
+
+      ['Henry', 'Etta', 'Jack'].forEach(kid => {
+        const d = row[kid] || {};
+        const w = d.weight || 0;
+        const h = d.height || 0;
+        const obj = OBJECTS.find(o => w <= o.maxW) || OBJECTS[OBJECTS.length - 1];
+        const legoBricks = Math.round((h * 25.4) / 9.6);
+        const div = document.createElement('div');
+        div.className = 'scale-card';
+        div.style.borderTop = '5px solid ' + COLORS[kid];
+        div.innerHTML = `
+          <span class="scale-emoji">${obj.emoji}</span>
+          <strong style="color:${COLORS[kid]}; font-size:16px;">${kid} (${row.label})</strong>
+          <p style="font-size:13px; margin-top:6px;">At <strong>${w || '?'} lbs</strong>, ${kid} weighs as much as <strong>${obj.name}</strong>!</p>
+          <p style="font-size:12px; color:var(--muted); margin-top:6px;">🧱 ${h ? h + '" tall = <strong>' + legoBricks + ' LEGO bricks</strong> stacked!' : ''}</p>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    document.getElementById('logForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const url = localStorage.getItem('gv_script_url');
+      if (!url) return;
+      const btn = document.getElementById('saveLogBtn');
+      btn.textContent = 'Saving to Sheet...';
+      btn.disabled = true;
+
+      const kid = document.getElementById('logKid').value;
+      const date = document.getElementById('logDate').value;
+      const ageYrs = exactAgeYears(kid, date, '');
+      const label = formatYearsMonths(ageYrs) + ' (Home)';
+
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify({
+            kid,
+            label,
+            date,
+            height: document.getElementById('logHeight').value,
+            weight: document.getElementById('logWeight').value
+          })
+        });
+        document.getElementById('logHeight').value = '';
+        document.getElementById('logWeight').value = '';
+        btn.textContent = '✓ Saved! Refreshing...';
+        setTimeout(() => { btn.textContent = 'Save to Google Sheet'; btn.disabled = false; loadSheetData(); }, 1500);
+      } catch (err) {
+        btn.textContent = 'Error saving — try again';
+        btn.disabled = false;
+      }
+    };
+
+    if (DEFAULT_URL) loadSheetData();
+    else document.getElementById('settingsModal').classList.add('open');
+  </script>
+</body>
+</html>

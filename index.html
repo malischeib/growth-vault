@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
   <style>
     :root {
       --bg: #F6F7FB;
@@ -123,21 +123,34 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
+      gap: 4px;
     }
     .Henry .kid-name { color: var(--henry); }
     .Etta .kid-name  { color: var(--etta); }
     .Jack .kid-name  { color: var(--jack); }
-    .stat-big { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900; line-height: 1.1; }
+    .stat-big { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 900; line-height: 1.1; }
     .stat-row { font-size: 12.5px; color: var(--muted); margin-top: 4px; font-weight: 600; }
     .badge {
       font-size: 10.5px;
       font-weight: 800;
       padding: 2px 7px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.88);
+      white-space: nowrap;
+    }
+    .est-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(24,34,48,0.08);
+      color: var(--ink);
+      padding: 1px 6px;
+      border-radius: 6px;
+      margin-left: 4px;
+      vertical-align: middle;
     }
     input[type="range"] { width: 100%; accent-color: var(--ink); margin: 12px 0 6px; cursor: pointer; }
-    .slider-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .slider-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .milestone-pill {
       background: var(--ink);
       color: #FFF;
@@ -146,6 +159,19 @@
       font-size: 13px;
       font-weight: 800;
     }
+    .toggle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .toggle-pill input { width: auto; accent-color: var(--ink); cursor: pointer; }
     .diff-box {
       margin-top: 12px;
       padding-top: 12px;
@@ -168,6 +194,18 @@
     }
     .chip.active { background: var(--ink); color: #FFF; border-color: var(--ink); }
     .chart-wrap { position: relative; height: 320px; width: 100%; }
+    .proj-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .proj-card {
+      border-radius: 14px;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+    }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     input, select {
       width: 100%;
@@ -201,7 +239,7 @@
     .modal-bg.open { display: flex; }
     .modal { background: #FFF; border-radius: 18px; padding: 20px; max-width: 440px; width: 100%; }
     @media (max-width: 620px) {
-      .kid-grid, .diff-box { grid-template-columns: 1fr; }
+      .kid-grid, .diff-box, .proj-grid { grid-template-columns: 1fr; }
       .tabs { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
@@ -215,13 +253,13 @@
     </div>
     <div style="display:flex; gap:6px;">
       <button class="icon-pill" id="refreshBtn">↻ Sync</button>
-      <button class="icon-pill" id="settingsBtn">⚙ Sheet URL</button>
+      <button class="icon-pill" id="settingsBtn">⚙ Settings</button>
     </div>
   </header>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="showdown">⚖️ Showdown</button>
-    <button class="tab-btn" data-tab="curves">📈 Curves</button>
+    <button class="tab-btn" data-tab="curves">📈 Curves & Adult</button>
     <button class="tab-btn" data-tab="capsule">⏳ Today & Log</button>
     <button class="tab-btn" data-tab="scale">🦒 Fun Scale</button>
   </div>
@@ -234,7 +272,13 @@
           <h2>Same-Age Sibling Showdown</h2>
           <p class="subtitle">Scrub any milestone from Birth through 13+ years</p>
         </div>
-        <span class="milestone-pill" id="sliderLabel">Birth</span>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <label class="toggle-pill" title="Interpolate exact age on June exam rows so siblings are compared at identical ages">
+            <input type="checkbox" id="normToggleShowdown" checked />
+            <span>Exact-Age Normalize</span>
+          </label>
+          <span class="milestone-pill" id="sliderLabel">Birth</span>
+        </div>
       </div>
       <input type="range" id="ageSlider" min="0" max="0" value="0" />
       <div class="kid-grid" id="showdownCards"></div>
@@ -242,13 +286,13 @@
     </div>
   </section>
 
-  <!-- TAB 2: GROWTH CURVES -->
+  <!-- TAB 2: GROWTH CURVES & ADULT PROJECTION -->
   <section id="tab-curves" class="tab-panel" style="display:none;">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <div>
           <h2>Overlaid Sibling Curves</h2>
-          <p class="subtitle">Plotted by exact biological age (calculated from DOB & June exam dates)</p>
+          <p class="subtitle">Solid = recorded exams · Dashed = projected trajectory to age 18</p>
         </div>
         <div class="chart-controls">
           <button class="chip active" data-metric="height">Height (in)</button>
@@ -259,7 +303,7 @@
       <div class="chart-wrap">
         <canvas id="growthChart"></canvas>
       </div>
-      <div id="projectionNote" style="margin-top:12px; font-size:12.5px; color:var(--muted); background:var(--bg); padding:10px 12px; border-radius:10px;"></div>
+      <div class="proj-grid" id="adultProjections"></div>
     </div>
   </section>
 
@@ -310,7 +354,13 @@
           <h2>Fun Size & Weight Visualizer</h2>
           <p class="subtitle">See how big each kid is compared to everyday things & animals</p>
         </div>
-        <select id="scaleMilestoneSelect" style="width:auto; font-weight:700;"></select>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <label class="toggle-pill">
+            <input type="checkbox" id="normToggleScale" checked />
+            <span>Exact-Age Normalize</span>
+          </label>
+          <select id="scaleMilestoneSelect" style="width:auto; font-weight:700;"></select>
+        </div>
       </div>
       <div class="scale-grid" id="scaleGrid"></div>
     </div>
@@ -319,12 +369,25 @@
   <!-- SETTINGS MODAL -->
   <div class="modal-bg" id="settingsModal">
     <div class="modal">
-      <h2 style="font-family:'Fraunces',serif; margin-bottom:6px;">Google Sheet Connection</h2>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">
-        Paste your deployed Google Apps Script Web App URL below:
+      <h2 style="font-family:'Fraunces',serif; margin-bottom:6px;">App Settings</h2>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">
+        Google Apps Script Web App URL:
       </p>
-      <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
-      <button class="btn-primary" id="saveUrlBtn">Connect & Load Data</button>
+      <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="margin-bottom:12px;" />
+      <p style="font-size:13px; color:var(--muted); margin-bottom:6px;">
+        Parents' Heights (for Genetic Adult Height Target):
+      </p>
+      <div class="form-grid" style="margin-top:0; margin-bottom:12px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:var(--muted);">Mom (inches)</label>
+          <input type="number" step="0.5" id="momHeightInput" value="66" />
+        </div>
+        <div>
+          <label style="font-size:11px; font-weight:700; color:var(--muted);">Dad (inches)</label>
+          <input type="number" step="0.5" id="dadHeightInput" value="74" />
+        </div>
+      </div>
+      <button class="btn-primary" id="saveUrlBtn">Save & Reload Data</button>
     </div>
   </div>
 
@@ -342,16 +405,85 @@
     let chartInstance = null;
     let currentMetric = 'height';
 
-    const DEFAULT_URL = localStorage.getItem('gv_script_url') || '';
+    const CDC_BOYS_HEIGHT = [
+      [2, 34.1, 1.35], [3, 37.5, 1.50], [4, 40.3, 1.65], [5, 43.0, 1.80],
+      [6, 45.5, 1.95], [7, 48.0, 2.10], [8, 50.4, 2.25], [9, 52.6, 2.40],
+      [10, 54.6, 2.55], [11, 56.5, 2.75], [12, 58.7, 3.00], [13, 61.5, 3.20],
+      [14, 64.5, 3.15], [15, 66.9, 2.95], [16, 68.3, 2.85], [17, 69.0, 2.80],
+      [18, 69.3, 2.80], [20, 69.5, 2.80]
+    ];
+    const CDC_GIRLS_HEIGHT = [
+      [2, 33.6, 1.35], [3, 37.0, 1.50], [4, 39.6, 1.65], [5, 42.4, 1.80],
+      [6, 45.0, 1.95], [7, 47.6, 2.10], [8, 50.0, 2.25], [9, 52.2, 2.45],
+      [10, 54.5, 2.65], [11, 57.1, 2.80], [12, 59.6, 2.75], [13, 61.7, 2.60],
+      [14, 63.0, 2.55], [15, 63.7, 2.50], [16, 64.0, 2.50], [17, 64.1, 2.50],
+      [18, 64.1, 2.50], [20, 64.2, 2.50]
+    ];
+
+    function getCdcStats(kid, ageYrs) {
+      const table = kid === 'Etta' ? CDC_GIRLS_HEIGHT : CDC_BOYS_HEIGHT;
+      if (ageYrs <= table[0][0]) return { mean: table[0][1], sd: table[0][2] };
+      if (ageYrs >= table[table.length - 1][0]) {
+        const last = table[table.length - 1];
+        return { mean: last[1], sd: last[2] };
+      }
+      for (let i = 0; i < table.length - 1; i++) {
+        if (ageYrs >= table[i][0] && ageYrs <= table[i + 1][0]) {
+          const t = (ageYrs - table[i][0]) / (table[i + 1][0] - table[i][0]);
+          return {
+            mean: table[i][1] + t * (table[i + 1][1] - table[i][1]),
+            sd: table[i][2] + t * (table[i + 1][2] - table[i][2])
+          };
+        }
+      }
+      return { mean: 66, sd: 2.6 };
+    }
+
+    function erf(x) {
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+      const t = 1.0 / (1.0 + p * x);
+      const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+      return sign * y;
+    }
+
+    function zToPercentile(z) {
+      return Math.round(50 * (1 + erf(z / Math.SQRT2)));
+    }
+
+    function projectAdultHeight(kid) {
+      const series = getKidSeries(kid, 'height').filter(p => p.x >= 2);
+      if (!series.length) return null;
+      const latest = series[series.length - 1];
+      const ref = getCdcStats(kid, latest.x);
+      const z = (latest.y - ref.mean) / ref.sd;
+      const adultRef = getCdcStats(kid, 20);
+      const projected = adultRef.mean + z * adultRef.sd;
+
+      const momH = Number(localStorage.getItem('gv_mom_h') || 66);
+      const dadH = Number(localStorage.getItem('gv_dad_h') || 74);
+      const midParental = kid === 'Etta'
+        ? (momH + dadH - 5) / 2
+        : (momH + dadH + 5) / 2;
+
+      return {
+        z,
+        percentile: Math.min(99, Math.max(1, zToPercentile(z))),
+        curveProjected: +projected.toFixed(1),
+        midParental: +midParental.toFixed(1),
+        latestAge: latest.x
+      };
+    }
 
     function labelToYears(label) {
       const s = String(label || '').toLowerCase().trim();
       if (s === 'birth' || s === 'newborn') return 0;
-      const wk = s.match(/([\d.]+)\s*week/);
+      const wk = s.match(/([\\d.]+)\\s*week/);
       if (wk) return parseFloat(wk[1]) / 52;
-      const mo = s.match(/([\d.]+)\s*month/);
+      const mo = s.match(/([\\d.]+)\\s*month/);
       if (mo) return parseFloat(mo[1]) / 12;
-      const yr = s.match(/([\d.]+)\s*year/);
+      const yr = s.match(/([\\d.]+)\\s*year/);
       if (yr) return parseFloat(yr[1]);
       return null;
     }
@@ -379,11 +511,10 @@
     function fmtHeight(inches) {
       if (!inches) return '—';
       const ft = Math.floor(inches / 12);
-      const rem = (inches % 12).toFixed(1).replace(/\.0$/, '');
+      const rem = (inches % 12).toFixed(1).replace(/\\.0$/, '');
       return inches + '" (' + ft + "'" + rem + '")';
     }
 
-    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.onclick = () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -396,13 +527,16 @@
 
     document.getElementById('settingsBtn').onclick = () => {
       document.getElementById('scriptUrlInput').value = localStorage.getItem('gv_script_url') || '';
+      document.getElementById('momHeightInput').value = localStorage.getItem('gv_mom_h') || 66;
+      document.getElementById('dadHeightInput').value = localStorage.getItem('gv_dad_h') || 74;
       document.getElementById('settingsModal').classList.add('open');
     };
 
     document.getElementById('saveUrlBtn').onclick = () => {
       const url = document.getElementById('scriptUrlInput').value.trim();
-      if (!url) return;
-      localStorage.setItem('gv_script_url', url);
+      if (url) localStorage.setItem('gv_script_url', url);
+      localStorage.setItem('gv_mom_h', document.getElementById('momHeightInput').value || 66);
+      localStorage.setItem('gv_dad_h', document.getElementById('dadHeightInput').value || 74);
       document.getElementById('settingsModal').classList.remove('open');
       loadSheetData();
     };
@@ -434,6 +568,20 @@
       slider.max = rows.length - 1;
       slider.value = rows.length - 1;
       slider.oninput = () => renderShowdown(Number(slider.value));
+
+      const normShowdown = document.getElementById('normToggleShowdown');
+      const normScale = document.getElementById('normToggleScale');
+      normShowdown.onchange = () => {
+        normScale.checked = normShowdown.checked;
+        renderShowdown(Number(slider.value));
+        renderScale(Number(document.getElementById('scaleMilestoneSelect').value));
+      };
+      normScale.onchange = () => {
+        normShowdown.checked = normScale.checked;
+        renderShowdown(Number(slider.value));
+        renderScale(Number(document.getElementById('scaleMilestoneSelect').value));
+      };
+
       renderShowdown(rows.length - 1);
 
       const scaleSel = document.getElementById('scaleMilestoneSelect');
@@ -452,54 +600,116 @@
       renderChart();
     }
 
+    function getKidSeries(kid, metric) {
+      return (sheetData.rows || [])
+        .map(r => {
+          const val = r[kid]?.[metric];
+          const age = exactAgeYears(kid, r[kid]?.date, r.label);
+          return (val !== null && val !== undefined && age !== null) ? { x: Number(age.toFixed(3)), y: val, label: r.label, date: r[kid]?.date } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.x - b.x);
+    }
+
+    function interpolateAtAge(kid, targetAgeYrs) {
+      function interp(arr) {
+        if (!arr.length) return { val: null, exact: false };
+        const close = arr.find(p => Math.abs(p.x - targetAgeYrs) <= 0.08);
+        if (close) return { val: close.y, exact: true, actualAge: close.x };
+        if (targetAgeYrs < arr[0].x) return { val: null, exact: false };
+        if (targetAgeYrs > arr[arr.length - 1].x) return { val: null, exact: false, notReached: true };
+        for (let i = 0; i < arr.length - 1; i++) {
+          if (targetAgeYrs >= arr[i].x && targetAgeYrs <= arr[i + 1].x) {
+            const t = (targetAgeYrs - arr[i].x) / (arr[i + 1].x - arr[i].x);
+            return {
+              val: +(arr[i].y + t * (arr[i + 1].y - arr[i].y)).toFixed(2),
+              exact: false,
+              interpolated: true
+            };
+          }
+        }
+        return { val: null, exact: false };
+      }
+      return {
+        height: interp(getKidSeries(kid, 'height')),
+        weight: interp(getKidSeries(kid, 'weight')),
+        head: interp(getKidSeries(kid, 'head'))
+      };
+    }
+
+    function getMilestoneMeasurements(idx, normalize) {
+      const row = sheetData.rows[idx];
+      const targetAge = labelToYears(row.label);
+      const result = {};
+
+      ['Henry', 'Etta', 'Jack'].forEach(kid => {
+        const raw = row[kid] || {};
+        const rawAge = exactAgeYears(kid, raw.date, row.label);
+
+        if (normalize && targetAge !== null && rawAge !== null && Math.abs(rawAge - targetAge) > 0.12) {
+          const est = interpolateAtAge(kid, targetAge);
+          if (est.height.val !== null || est.weight.val !== null) {
+            result[kid] = {
+              height: est.height.val,
+              weight: est.weight.val,
+              head: est.head.val,
+              ageLabel: formatYearsMonths(targetAge),
+              normalized: true,
+              rawAgeNote: 'Adjusted from ' + formatYearsMonths(rawAge)
+            };
+            return;
+          }
+        }
+        result[kid] = {
+          height: raw.height,
+          weight: raw.weight,
+          head: raw.head,
+          ageLabel: raw.date ? formatYearsMonths(rawAge) : row.label,
+          date: raw.date,
+          normalized: false
+        };
+      });
+      return result;
+    }
+
     function renderShowdown(idx) {
       const row = sheetData.rows[idx];
       if (!row) return;
+      const normalize = document.getElementById('normToggleShowdown').checked;
       document.getElementById('sliderLabel').textContent = row.label || 'Milestone';
 
+      const data = getMilestoneMeasurements(idx, normalize);
       const cardsEl = document.getElementById('showdownCards');
       cardsEl.innerHTML = '';
 
       ['Henry', 'Etta', 'Jack'].forEach(kid => {
-        const d = row[kid] || {};
-        const ageYrs = exactAgeYears(kid, d.date, row.label);
+        const d = data[kid] || {};
         const div = document.createElement('div');
         div.className = 'kid-card ' + kid;
-        div.innerHTML = `
+        div.innerHTML = \`
           <div class="kid-name">
-            <span>${kid}</span>
-            <span class="badge">${d.date ? formatYearsMonths(ageYrs) : row.label}</span>
+            <span>\${kid}</span>
+            <span class="badge">\${d.ageLabel || row.label}</span>
           </div>
-          <div class="stat-big">${d.height ? fmtHeight(d.height) : '—'}</div>
-          <div class="stat-row">⚖️ Weight: <strong>${d.weight ? d.weight + ' lbs' : '—'}</strong></div>
-          ${d.head ? '<div class="stat-row">🧢 Head: <strong>' + d.head + '"</strong></div>' : ''}
-          ${d.date ? '<div class="stat-row" style="font-size:11px;">📅 Exam: ' + d.date + '</div>' : ''}
-        `;
+          <div class="stat-big">\${d.height ? fmtHeight(Number(d.height.toFixed(2))) : '—'}\${d.normalized ? '<span class="est-pill">~est</span>' : ''}</div>
+          <div class="stat-row">⚖️ Weight: <strong>\${d.weight ? d.weight.toFixed(1) + ' lbs' : '—'}</strong></div>
+          \${d.head ? '<div class="stat-row">🧢 Head: <strong>' + d.head.toFixed(2) + '"</strong></div>' : ''}
+          \${d.normalized ? '<div class="stat-row" style="font-size:11px; color:var(--ink);">✦ ' + d.rawAgeNote + '</div>' : (d.date ? '<div class="stat-row" style="font-size:11px;">📅 Exam: ' + d.date + '</div>' : '')}
+        \`;
         cardsEl.appendChild(div);
       });
 
       const pairs = [['Henry', 'Etta'], ['Etta', 'Jack'], ['Henry', 'Jack']];
       const diffEl = document.getElementById('diffSummary');
       diffEl.innerHTML = pairs.map(([a, b]) => {
-        const wDiff = (row[a]?.weight && row[b]?.weight) ? (row[a].weight - row[b].weight).toFixed(1) : null;
-        const hDiff = (row[a]?.height && row[b]?.height) ? (row[a].height - row[b].height).toFixed(2) : null;
-        return `<div class="diff-item">
-          <strong>${a} vs ${b}</strong><br/>
-          Height: ${hDiff !== null ? (hDiff > 0 ? '+' + hDiff : hDiff) + '"' : '—'} · 
-          Weight: ${wDiff !== null ? (wDiff > 0 ? '+' + wDiff : wDiff) + ' lbs' : '—'}
-        </div>`;
+        const wDiff = (data[a]?.weight && data[b]?.weight) ? (data[a].weight - data[b].weight).toFixed(1) : null;
+        const hDiff = (data[a]?.height && data[b]?.height) ? (data[a].height - data[b].height).toFixed(2) : null;
+        return \`<div class="diff-item">
+          <strong>\${a} vs \${b}</strong><br/>
+          Height: \${hDiff !== null ? (hDiff > 0 ? '+' + hDiff : hDiff) + '"' : '—'} · 
+          Weight: \${wDiff !== null ? (wDiff > 0 ? '+' + wDiff : wDiff) + ' lbs' : '—'}
+        </div>\`;
       }).join('');
-    }
-
-    function getKidSeries(kid, metric) {
-      return (sheetData.rows || [])
-        .map(r => {
-          const val = r[kid]?.[metric];
-          const age = exactAgeYears(kid, r[kid]?.date, r.label);
-          return (val !== null && val !== undefined && age !== null) ? { x: Number(age.toFixed(3)), y: val, label: r.label } : null;
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.x - b.x);
     }
 
     document.querySelectorAll('.chip[data-metric]').forEach(btn => {
@@ -516,15 +726,43 @@
       if (!ctx || !sheetData.rows.length) return;
       if (chartInstance) chartInstance.destroy();
 
-      const datasets = ['Henry', 'Etta', 'Jack'].map(kid => ({
-        label: kid,
-        data: getKidSeries(kid, currentMetric),
-        borderColor: COLORS[kid],
-        backgroundColor: COLORS[kid],
-        tension: 0.25,
-        pointRadius: 4,
-        borderWidth: 2.5
-      }));
+      const datasets = [];
+      ['Henry', 'Etta', 'Jack'].forEach(kid => {
+        const series = getKidSeries(kid, currentMetric);
+        datasets.push({
+          label: kid,
+          data: series,
+          borderColor: COLORS[kid],
+          backgroundColor: COLORS[kid],
+          tension: 0.25,
+          pointRadius: 4,
+          borderWidth: 2.5
+        });
+
+        if (currentMetric === 'height' && series.length) {
+          const proj = projectAdultHeight(kid);
+          const last = series[series.length - 1];
+          if (proj && last && last.x < 18) {
+            const futurePts = [last];
+            [12, 14, 16, 18].forEach(age => {
+              if (age > last.x) {
+                const ref = getCdcStats(kid, age);
+                futurePts.push({ x: age, y: +(ref.mean + proj.z * ref.sd).toFixed(1) });
+              }
+            });
+            datasets.push({
+              label: kid + ' (Projected)',
+              data: futurePts,
+              borderColor: COLORS[kid],
+              borderDash: [6, 5],
+              pointRadius: 2.5,
+              borderWidth: 2,
+              fill: false,
+              tension: 0.25
+            });
+          }
+        }
+      });
 
       chartInstance = new Chart(ctx, {
         type: 'line',
@@ -537,43 +775,29 @@
             y: { title: { display: true, text: currentMetric === 'weight' ? 'Weight (lbs)' : 'Inches' } }
           },
           plugins: {
+            legend: {
+              labels: { filter: (item) => !item.text.includes('(Projected)') }
+            },
             tooltip: {
               callbacks: {
-                label: (c) => `${c.dataset.label} (${formatYearsMonths(c.parsed.x)}): ${c.parsed.y}${currentMetric === 'weight' ? ' lbs' : '"'}`
+                label: (c) => \`\${c.dataset.label} (\${formatYearsMonths(c.parsed.x)}): \${c.parsed.y}\${currentMetric === 'weight' ? ' lbs' : '"'}\`
               }
             }
           }
         }
       });
 
-      // Simple trajectory note from latest growth rate
-      const notes = ['Henry', 'Etta', 'Jack'].map(kid => {
-        const s = getKidSeries(kid, 'height');
-        if (s.length < 2) return '';
-        const last = s[s.length - 1];
-        const prev = s[s.length - 2];
-        const rate = ((last.y - prev.y) / Math.max(0.25, last.x - prev.x)).toFixed(1);
-        return `<strong>${kid}</strong>: currently ${fmtHeight(last.y)} (growing ~${rate}"/yr)`;
-      }).filter(Boolean);
-      document.getElementById('projectionNote').innerHTML = '📏 <strong>Latest Velocity:</strong> ' + notes.join(' &nbsp;•&nbsp; ');
-    }
-
-    function interpolateAtAge(kid, targetAgeYrs) {
-      const hSeries = getKidSeries(kid, 'height');
-      const wSeries = getKidSeries(kid, 'weight');
-      function interp(arr) {
-        if (!arr.length) return null;
-        if (targetAgeYrs <= arr[0].x) return arr[0].y;
-        if (targetAgeYrs >= arr[arr.length - 1].x) return arr[arr.length - 1].y;
-        for (let i = 0; i < arr.length - 1; i++) {
-          if (targetAgeYrs >= arr[i].x && targetAgeYrs <= arr[i + 1].x) {
-            const t = (targetAgeYrs - arr[i].x) / (arr[i + 1].x - arr[i].x);
-            return +(arr[i].y + t * (arr[i + 1].y - arr[i].y)).toFixed(1);
-          }
-        }
-        return null;
-      }
-      return { height: interp(hSeries), weight: interp(wSeries), maxAge: hSeries[hSeries.length - 1]?.x || 0 };
+      const projEl = document.getElementById('adultProjections');
+      projEl.innerHTML = ['Henry', 'Etta', 'Jack'].map(kid => {
+        const p = projectAdultHeight(kid);
+        if (!p) return '';
+        return \`<div class="proj-card" style="border-top: 4px solid \${COLORS[kid]};">
+          <div style="font-weight:800; color:\${COLORS[kid]}; font-size:15px;">\${kid} · \${p.percentile}th %ile</div>
+          <div style="font-family:'Fraunces',serif; font-size:21px; font-weight:900; margin:4px 0;">\${fmtHeight(p.curveProjected)}</div>
+          <div style="font-size:11.5px; color:var(--muted); font-weight:600;">Curve trajectory at age 20</div>
+          <div style="font-size:11.5px; color:var(--ink); margin-top:4px; font-weight:600;">🧬 Genetic target: \${fmtHeight(p.midParental)} (±2")</div>
+        </div>\`;
+      }).join('');
     }
 
     function renderCapsule() {
@@ -590,17 +814,17 @@
           .filter(other => other !== kid)
           .map(other => {
             const est = interpolateAtAge(other, ageNow);
-            if (est.maxAge < ageNow - 0.3) return `<div class="stat-row">• ${other} hasn't reached ${formatYearsMonths(ageNow)} yet</div>`;
-            return `<div class="stat-row">• ${other} at ${formatYearsMonths(ageNow)}: <strong>${est.height}" / ${est.weight} lbs</strong></div>`;
+            if (est.height.notReached || est.height.val === null) return \`<div class="stat-row">• \${other} hasn't reached \${formatYearsMonths(ageNow)} yet</div>\`;
+            return \`<div class="stat-row">• \${other} at \${formatYearsMonths(ageNow)}: <strong>\${est.height.val}" / \${est.weight.val} lbs</strong></div>\`;
           }).join('');
 
         const div = document.createElement('div');
         div.className = 'kid-card ' + kid;
-        div.innerHTML = `
-          <div class="kid-name"><span>${kid}</span><span class="badge">${formatYearsMonths(ageNow)}</span></div>
+        div.innerHTML = \`
+          <div class="kid-name"><span>\${kid}</span><span class="badge">\${formatYearsMonths(ageNow)}</span></div>
           <div style="font-size:12px; font-weight:700; margin-bottom:4px;">Sibling Time Machine:</div>
-          ${comparisons}
-        `;
+          \${comparisons}
+        \`;
         box.appendChild(div);
       });
     }
@@ -611,7 +835,7 @@
       { maxW: 25, emoji: '🐕', name: 'a French Bulldog or 3 gallons of paint' },
       { maxW: 35, emoji: '🚲', name: 'a beach cruiser bicycle' },
       { maxW: 48, emoji: '🧳', name: 'a max-weight airline checked suitcase' },
-      { maxW: 65, emoji: ' retrievers 🦮', name: 'an adult Golden Retriever' },
+      { maxW: 65, emoji: '🦮', name: 'an adult Golden Retriever' },
       { maxW: 85, emoji: '🐆', name: 'an adult cheetah' },
       { maxW: 110, emoji: '🐼', name: 'a giant panda cub or large kangaroo' },
       { maxW: 999, emoji: '🦌', name: 'an adult white-tailed deer' }
@@ -620,11 +844,13 @@
     function renderScale(idx) {
       const row = sheetData.rows[idx];
       if (!row) return;
+      const normalize = document.getElementById('normToggleScale').checked;
+      const data = getMilestoneMeasurements(idx, normalize);
       const grid = document.getElementById('scaleGrid');
       grid.innerHTML = '';
 
       ['Henry', 'Etta', 'Jack'].forEach(kid => {
-        const d = row[kid] || {};
+        const d = data[kid] || {};
         const w = d.weight || 0;
         const h = d.height || 0;
         const obj = OBJECTS.find(o => w <= o.maxW) || OBJECTS[OBJECTS.length - 1];
@@ -632,12 +858,12 @@
         const div = document.createElement('div');
         div.className = 'scale-card';
         div.style.borderTop = '5px solid ' + COLORS[kid];
-        div.innerHTML = `
-          <span class="scale-emoji">${obj.emoji}</span>
-          <strong style="color:${COLORS[kid]}; font-size:16px;">${kid} (${row.label})</strong>
-          <p style="font-size:13px; margin-top:6px;">At <strong>${w || '?'} lbs</strong>, ${kid} weighs as much as <strong>${obj.name}</strong>!</p>
-          <p style="font-size:12px; color:var(--muted); margin-top:6px;">🧱 ${h ? h + '" tall = <strong>' + legoBricks + ' LEGO bricks</strong> stacked!' : ''}</p>
-        `;
+        div.innerHTML = \`
+          <span class="scale-emoji">\${obj.emoji}</span>
+          <strong style="color:\${COLORS[kid]}; font-size:16px;">\${kid} (\${d.ageLabel || row.label})\${d.normalized ? '<span class="est-pill">~est</span>' : ''}</strong>
+          <p style="font-size:13px; margin-top:6px;">At <strong>\${w ? w.toFixed(1) + ' lbs' : '?'}</strong>, \${kid} weighs as much as <strong>\${obj.name}</strong>!</p>
+          <p style="font-size:12px; color:var(--muted); margin-top:6px;">🧱 \${h ? h.toFixed(1) + '" tall = <strong>' + legoBricks + ' LEGO bricks</strong> stacked!' : ''}</p>
+        \`;
         grid.appendChild(div);
       });
     }
@@ -677,8 +903,13 @@
       }
     };
 
-    if (DEFAULT_URL) loadSheetData();
+    if (localStorage.getItem('gv_script_url')) loadSheetData();
     else document.getElementById('settingsModal').classList.add('open');
   </script>
 </body>
-</html>
+</html>`;
+
+const a = document.createElement('a');
+a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+a.download = 'index.html';
+a.click();
